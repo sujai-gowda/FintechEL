@@ -1,0 +1,6 @@
+[
+  { "id": "admin", "email": "admin@escrow.com", "password": "admin123", "role": "Admin", "status": "ACTIVE" },
+  { "id": "user1", "email": "user1@escrow.com", "password": "user123", "role": "User", "status": "ACTIVE" },
+  { "id": "user2", "email": "user2@escrow.com", "password": "user123", "role": "User", "status": "ACTIVE" },
+  { "id": "user3", "email": "user3@escrow.com", "password": "user123", "role": "User", "status": "ACTIVE" }
+]
