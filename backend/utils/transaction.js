@@ -1,20 +1,16 @@
-const { addJSONRecord } = require('./storage');
 const { v4: uuidv4 } = require('uuid');
+const Transaction = require('../models/Transaction');
 
-const createTransaction = (from, to, amount, currency, type, relatedId = null) => {
-  const transaction = {
+const createTransaction = async (from, to, amount, currency, type, relatedId = null) => {
+  return Transaction.create({
     transactionId: uuidv4(),
-    from, // userId or 'escrow' or 'system'
-    to,   // userId or 'escrow' or 'system'
+    from,
+    to,
     amount: Number(amount),
-    currency,
-    type, // ESCROW_FUND, PAYMENT_RELEASE, REFUND, DISPUTE_CREATED, ADMIN_RELEASE
-    relatedId
-  };
-  
-  return addJSONRecord('transactions', transaction);
+    currency: currency || 'INR',
+    type,
+    relatedId,
+  });
 };
 
-module.exports = {
-  createTransaction
-};
+module.exports = { createTransaction };

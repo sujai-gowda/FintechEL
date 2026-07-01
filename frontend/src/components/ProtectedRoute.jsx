@@ -1,14 +1,16 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getDashboardPath } from '../helpers/routing';
+import { ROLES } from '../constants/roles';
 
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex justify-center items-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-white flex justify-center items-center">
+        <div className="text-muted-foreground text-sm">Loading...</div>
       </div>
     );
   }
@@ -18,7 +20,15 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to={user.role === 'Admin' ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={getDashboardPath(user.role)} replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to={getDashboardPath(user.role)} replace />;
+  }
+
+  if (!requiredRole && !allowedRoles && user.role === ROLES.ADMIN) {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;

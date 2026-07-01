@@ -1,39 +1,43 @@
-const { readJSONFile, updateJSONFile } = require('../utils/storage');
+const User = require('../models/User');
+const { sanitizeUser } = require('../utils/userHelpers');
 
-const getUsers = (req, res) => {
-  const users = [
-    { id: 'admin', email: 'admin@escrow.com', role: 'Admin', status: 'ACTIVE' },
-    { id: 'user1', email: 'user1@escrow.com', role: 'User', status: 'ACTIVE' },
-    { id: 'user2', email: 'user2@escrow.com', role: 'User', status: 'ACTIVE' },
-    { id: 'user3', email: 'user3@escrow.com', role: 'User', status: 'ACTIVE' }
-  ];
-  
-  // Ideally this would come from users.json, but since we hardcoded them in auth controller,
-  // we will just return them or read from a user file if we sync them. 
-  // Let's assume we read from a users.json if we start using it.
-  const storedUsers = readJSONFile('users');
-  const allUsers = storedUsers.length > 0 ? storedUsers : users;
+const getUsers = async (req, res) => {
+  try {
+    const { role } = req.query;
+    const query = role ? { role } : { role: { $ne: 'Admin' } };
 
-  res.json(allUsers);
+    const users = await User.find(query).select('-password');
+    res.json(users.map(sanitizeUser));
+  } catch (error) {
+    console.error('GetUsers error:', error);
+    res.status(500).json({ error: 'Server error fetching users' });
+  }
 };
 
-const freezeUser = (req, res) => {
-  const { id } = req.params;
-  const storedUsers = readJSONFile('users');
-  // For the hardcoded demo, we would need to ensure users.json is populated on start.
-  // We can just update it if it exists.
-  let user = storedUsers.find(u => u.id === id);
-  if (!user) {
-    // If not found in file, we might not be able to freeze hardcoded ones easily without 
-    // writing them to the file first. We will simulate it.
-    return res.status(404).json({ error: 'User not found in storage' });
-  }
+const freezeUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findOne({ id });
 
-  updateJSONFile('users', id, { status: user.status === 'FROZEN' ? 'ACTIVE' : 'FROZEN' });
-  res.json({ message: `User status updated successfully` });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.role === 'Admin') {
+      return res.status(403).json({ error: 'Cannot freeze admin accounts' });
+    }
+
+    user.status = user.status === 'FROZEN' ? 'ACTIVE' : 'FROZEN';
+    await user.save();
+
+    res.json({ message: 'User status updated successfully' });
+  } catch (error) {
+    console.error('FreezeUser error:', error);
+    res.status(500).json({ error: 'Server error updating user status' });
+  }
 };
 
 module.exports = {
   getUsers,
-  freezeUser
+  freezeUser,
 };

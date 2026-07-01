@@ -1,23 +1,77 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
 @layer base {
+  * {
+    border-color: #e4e4e7;
+  }
+
   body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-      sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #0B0F19; /* dark-900 */
-    color: #f8fafc; /* slate-50 */
+    background-color: #ffffff;
+    color: #09090b;
   }
 }
 
-@layer utilities {
-  .glass {
-    @apply bg-[#111827]/60 backdrop-blur-md border border-[#1F2937] shadow-xl;
+@layer components {
+  .card {
+    @apply bg-white border border-border rounded-lg shadow-card;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-destructive {
+    @apply inline-flex items-center justify-center rounded-md border border-destructive/30 bg-white px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs font-medium;
+  }
+
+  .badge-default {
+    @apply bg-primary text-primary-foreground border-transparent;
+  }
+
+  .badge-secondary {
+    @apply bg-secondary text-secondary-foreground;
+  }
+
+  .badge-outline {
+    @apply bg-transparent text-foreground;
+  }
+
+  .page-container {
+    @apply min-h-screen bg-white text-foreground p-6 md:p-8;
+  }
+
+  .page-header {
+    @apply flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4;
+  }
+
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight text-foreground;
+  }
+
+  .nav-card {
+    @apply bg-white border border-border rounded-lg shadow-card p-4 flex flex-col items-center justify-center gap-3 transition-colors hover:bg-muted cursor-pointer;
+  }
+
+  .nav-card-primary {
+    @apply bg-primary text-primary-foreground border-transparent rounded-lg shadow-card p-4 flex flex-col items-center justify-center gap-3 transition-colors hover:bg-zinc-800 cursor-pointer;
   }
 }

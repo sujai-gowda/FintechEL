@@ -1,104 +1,134 @@
-const { readJSONFile, writeJSONFile, updateJSONFile, addJSONRecord } = require('../utils/storage');
-const { createTransaction } = require('../utils/transaction');
+const { verifyWalletPin } = require('../utils/walletPin');
 const { v4: uuidv4 } = require('uuid');
+const Job = require('../models/Job');
+const Escrow = require('../models/Escrow');
+const {
+  lockFundsInEscrow,
+  getActiveEscrowForJob,
+  releaseEscrowToFreelancer,
+} = require('../utils/escrowHelpers');
 
-const fundEscrow = (req, res) => {
-  const { jobId, freelancerId } = req.body;
-  const posterId = req.user.id;
+const fundEscrow = async (req, res) => {
+  try {
+    const { jobId, pin } = req.body;
+    const posterId = req.user.id;
 
-  const jobs = readJSONFile('jobs');
-  const job = jobs.find(j => j.jobId === jobId);
+    if (!pin) return res.status(400).json({ error: 'Wallet PIN is required to fund escrow' });
 
-  if (!job) {
-    return res.status(404).json({ error: 'Job not found' });
+    const job = await Job.findOne({ jobId });
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    if (job.posterId !== posterId) return res.status(403).json({ error: 'Only the client can fund escrow' });
+    if (!['OPEN', 'ASSIGNED'].includes(job.status)) {
+      return res.status(400).json({ error: 'Job is not eligible for escrow funding' });
+    }
+
+    const existingEscrow = await getActiveEscrowForJob(jobId);
+    if (existingEscrow) {
+      return res.status(400).json({ error: 'Escrow already funded for this job' });
+    }
+
+    if (job.status === 'ASSIGNED' && !job.freelancerId) {
+      return res.status(400).json({ error: 'No freelancer assigned' });
+    }
+
+    const pinCheck = await verifyWalletPin(posterId, pin);
+    if (!pinCheck.ok) return res.status(401).json({ error: pinCheck.error });
+
+    const posterWallet = pinCheck.wallet;
+    if (posterWallet.balance < job.budget) {
+      return res.status(400).json({ error: `Insufficient balance. Need ₹${job.budget.toLocaleString('en-IN')}` });
+    }
+
+    posterWallet.balance -= job.budget;
+    await posterWallet.save();
+
+    const escrow = await lockFundsInEscrow({
+      posterId,
+      jobId: job.jobId,
+      amount: job.budget,
+      freelancerId: job.freelancerId || null,
+    });
+
+    res.json({
+      message: `₹${job.budget.toLocaleString('en-IN')} locked in escrow successfully`,
+      escrow,
+      wallet: { balance: posterWallet.balance, currency: 'INR' },
+    });
+  } catch (error) {
+    console.error('fundEscrow error:', error);
+    res.status(500).json({ error: 'Failed to fund escrow' });
   }
-  if (job.posterId !== posterId) {
-    return res.status(403).json({ error: 'Only the job poster can fund escrow' });
-  }
-  if (job.status !== 'OPEN' && job.status !== 'ASSIGNED') {
-    return res.status(400).json({ error: 'Job is not open for funding' });
-  }
-
-  const wallets = readJSONFile('wallets');
-  const posterWallet = wallets.find(w => w.userId === posterId);
-
-  if (!posterWallet || posterWallet.balance < job.budget) {
-    return res.status(400).json({ error: 'Insufficient balance to fund escrow' });
-  }
-
-  // Deduct balance
-  updateJSONFile('wallets', posterWallet.id, { balance: posterWallet.balance - job.budget });
-
-  // Create Escrow
-  const escrow = {
-    escrowId: uuidv4(),
-    jobId: job.jobId,
-    jobPosterId: posterId,
-    freelancerId: freelancerId,
-    amount: job.budget,
-    currency: job.currency,
-    status: 'HELD'
-  };
-  addJSONRecord('escrows', escrow);
-
-  // Update Job Status
-  updateJSONFile('jobs', job.jobId, { status: 'ASSIGNED', freelancerId });
-
-  // Create Transaction
-  createTransaction(posterId, 'escrow', job.budget, job.currency, 'ESCROW_FUND', escrow.escrowId);
-
-  res.json({ message: 'Escrow funded successfully', escrow });
 };
 
-const getEscrows = (req, res) => {
-  const escrows = readJSONFile('escrows');
-  res.json(escrows);
-};
-
-const getMyEscrows = (req, res) => {
-  const escrows = readJSONFile('escrows');
-  const myEscrows = escrows.filter(e => e.jobPosterId === req.user.id || e.freelancerId === req.user.id);
-  res.json(myEscrows);
-};
-
-const submitWork = (req, res) => {
-  const { escrowId } = req.body;
-  const escrows = readJSONFile('escrows');
-  const escrow = escrows.find(e => e.escrowId === escrowId);
-
-  if (!escrow) return res.status(404).json({ error: 'Escrow not found' });
-  if (escrow.freelancerId !== req.user.id) return res.status(403).json({ error: 'Only the freelancer can submit work' });
-  if (escrow.status !== 'HELD') return res.status(400).json({ error: 'Invalid escrow state for submission' });
-
-  updateJSONFile('escrows', escrowId, { status: 'SUBMITTED' });
-  res.json({ message: 'Work submitted successfully' });
-};
-
-const approveWork = (req, res) => {
-  const { escrowId } = req.body;
-  const escrows = readJSONFile('escrows');
-  const escrow = escrows.find(e => e.escrowId === escrowId);
-
-  if (!escrow) return res.status(404).json({ error: 'Escrow not found' });
-  if (escrow.jobPosterId !== req.user.id) return res.status(403).json({ error: 'Only the job poster can approve work' });
-  if (escrow.status !== 'SUBMITTED') return res.status(400).json({ error: 'Work has not been submitted yet' });
-
-  const wallets = readJSONFile('wallets');
-  const freelancerWallet = wallets.find(w => w.userId === escrow.freelancerId);
-
-  if (freelancerWallet) {
-    updateJSONFile('wallets', freelancerWallet.id, { balance: freelancerWallet.balance + escrow.amount });
-  } else {
-    // Should not happen normally, but just in case
-    return res.status(400).json({ error: 'Freelancer wallet not found' });
+const getEscrows = async (req, res) => {
+  try {
+    const escrows = await Escrow.find().sort({ createdAt: -1 });
+    res.json(escrows);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch escrows' });
   }
+};
 
-  updateJSONFile('escrows', escrowId, { status: 'RELEASED' });
-  updateJSONFile('jobs', escrow.jobId, { status: 'COMPLETED' });
-  
-  createTransaction('escrow', escrow.freelancerId, escrow.amount, escrow.currency, 'PAYMENT_RELEASE', escrow.escrowId);
+const getMyEscrows = async (req, res) => {
+  try {
+    const escrows = await Escrow.find({
+      $or: [
+        { jobPosterId: req.user.id },
+        { freelancerId: req.user.id },
+      ],
+    }).sort({ createdAt: -1 });
+    res.json(escrows);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch escrows' });
+  }
+};
 
-  res.json({ message: 'Work approved and funds released' });
+const submitWork = async (req, res) => {
+  try {
+    const { escrowId } = req.body;
+    const escrow = await Escrow.findOne({ escrowId });
+
+    if (!escrow) return res.status(404).json({ error: 'Escrow not found' });
+    if (escrow.freelancerId !== req.user.id) {
+      return res.status(403).json({ error: 'Only the assigned freelancer can submit work' });
+    }
+    if (escrow.status !== 'HELD') return res.status(400).json({ error: 'Invalid escrow state' });
+    if (!escrow.freelancerId) {
+      return res.status(400).json({ error: 'No freelancer assigned to this escrow yet' });
+    }
+
+    escrow.status = 'SUBMITTED';
+    await escrow.save();
+
+    res.json({ message: 'Work submitted successfully. Awaiting client approval.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to submit work' });
+  }
+};
+
+const approveWork = async (req, res) => {
+  try {
+    const { escrowId, pin } = req.body;
+    if (!pin) return res.status(400).json({ error: 'PIN required to release payment' });
+
+    const pinCheck = await verifyWalletPin(req.user.id, pin);
+    if (!pinCheck.ok) return res.status(401).json({ error: pinCheck.error });
+
+    const escrow = await Escrow.findOne({ escrowId });
+
+    if (!escrow) return res.status(404).json({ error: 'Escrow not found' });
+    if (escrow.jobPosterId !== req.user.id) return res.status(403).json({ error: 'Only the client can approve' });
+    if (escrow.status !== 'SUBMITTED') return res.status(400).json({ error: 'Work not submitted yet' });
+    if (!escrow.freelancerId) return res.status(400).json({ error: 'No freelancer assigned' });
+
+    await releaseEscrowToFreelancer(escrow);
+    await Job.updateOne({ jobId: escrow.jobId }, { status: 'COMPLETED' });
+
+    res.json({ message: `₹${escrow.amount.toLocaleString('en-IN')} released to freelancer` });
+  } catch (error) {
+    console.error('approveWork error:', error);
+    res.status(500).json({ error: 'Failed to approve work' });
+  }
 };
 
 module.exports = {
@@ -106,5 +136,5 @@ module.exports = {
   getEscrows,
   getMyEscrows,
   submitWork,
-  approveWork
+  approveWork,
 };

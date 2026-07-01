@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "jobId": "6a149622-f2b7-4045-8a81-b995f137ca0d",
+    "posterId": "user1",
+    "title": "reacy ska",
+    "description": "mndsaca",
+    "budget": -222,
+    "currency": "USD",
+    "deadline": "2021-02-11",
+    "status": "OPEN",
+    "freelancerId": null,
+    "createdAt": "2026-07-01T07:06:55.571Z",
+    "updatedAt": "2026-07-01T07:06:55.571Z"
+  }
+]

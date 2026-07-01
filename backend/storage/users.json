@@ -1,6 +1,6 @@
 [
-  { "id": "admin", "email": "admin@escrow.com", "password": "admin123", "role": "Admin", "status": "ACTIVE" },
-  { "id": "user1", "email": "user1@escrow.com", "password": "user123", "role": "User", "status": "ACTIVE" },
-  { "id": "user2", "email": "user2@escrow.com", "password": "user123", "role": "User", "status": "ACTIVE" },
-  { "id": "user3", "email": "user3@escrow.com", "password": "user123", "role": "User", "status": "ACTIVE" }
+  { "id": "admin", "email": "admin@escrow.com", "password": "admin123", "role": "Admin", "status": "ACTIVE", "name": "Platform Admin" },
+  { "id": "user1", "email": "client@escrow.com", "password": "client123", "role": "Client", "status": "ACTIVE", "name": "Demo Client" },
+  { "id": "user2", "email": "freelancer@escrow.com", "password": "freelancer123", "role": "Freelancer", "status": "ACTIVE", "name": "Demo Freelancer" },
+  { "id": "user3", "email": "client2@escrow.com", "password": "client123", "role": "Client", "status": "ACTIVE", "name": "Demo Client 2" }
 ]

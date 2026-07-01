@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle } from 'lucide-react';
+import DashboardLayout from '../components/dashboard/DashboardLayout';
+import { apiFetch } from '../services/api';
+import { PRIVACY_LEVELS } from '../constants/finance';
+import { LayoutDashboard, Briefcase, PlusCircle, Shield, Activity, MessageSquare } from 'lucide-react';
+
+const NAV = [
+  { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
+  { label: 'Post Job', path: '/jobs/create', icon: PlusCircle },
+  { label: 'My Jobs', path: '/jobs/my', icon: Briefcase },
+  { label: 'Escrow', path: '/escrow', icon: Shield },
+  { label: 'Messages', path: '/messages', icon: MessageSquare },
+  { label: 'History', path: '/history', icon: Activity },
+];
 
 const CreateJob = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    budget: '',
-    currency: 'USD',
-    deadline: ''
+  const [form, setForm] = useState({
+    title: '', description: '', budget: '', deadline: '', pin: '',
+    jobLinks: '', projectLinks: '', privacyLevel: 'PUBLIC',
+    securityNotes: '', reward: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -19,123 +29,105 @@ const CreateJob = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
-
     try {
-      const res = await fetch('http://localhost:5000/api/jobs', {
+      const data = await apiFetch('/jobs', token, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...form,
+          jobLinks: form.jobLinks.split('\n').filter(Boolean),
+          projectLinks: form.projectLinks.split('\n').filter(Boolean),
+        }),
       });
-      
-      const data = await res.json();
-      
-      if (!res.ok) throw new Error(data.error);
-      
-      setSuccess('Job created successfully!');
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setSuccess(data.message || 'Job posted and funds locked in escrow!');
+      setTimeout(() => navigate('/jobs/my'), 1500);
     } catch (err) {
       setError(err.message);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8 flex justify-center items-center">
-      <div className="max-w-2xl w-full">
-        <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <PlusCircle size={150} />
+    <DashboardLayout navItems={NAV} title="Post a Job" subtitle="Set your budget — funds are locked in escrow when you post">
+      <div className="max-w-2xl">
+        {error && <div className="bg-destructive/10 border border-destructive/30 text-destructive p-3 rounded-md mb-4 text-sm">{error}</div>}
+        {success && <div className="bg-muted border border-border p-3 rounded-md mb-4 text-sm">{success}</div>}
+
+        <form onSubmit={handleSubmit} className="card p-6 space-y-5">
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Job Title</label>
+            <input className="input-field" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Build fintech dashboard" />
           </div>
-          
-          <h2 className="text-3xl font-bold mb-8 text-blue-400">Post a New Job</h2>
-          
-          {error && <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded mb-6">{error}</div>}
-          {success && <div className="bg-green-900/50 border border-green-500 text-green-200 p-4 rounded mb-6">{success}</div>}
-          
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Description</label>
+            <textarea className="input-field min-h-[100px]" required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Full project scope and deliverables..." />
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Job Title</label>
-              <input 
-                type="text"
-                required
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                value={formData.title}
-                onChange={e => setFormData({...formData, title: e.target.value})}
-                placeholder="e.g. Build a React component"
-              />
+              <label className="block text-sm font-medium mb-1.5">Budget (₹ INR)</label>
+              <input type="number" className="input-field" required min="1" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} placeholder="25000" />
+              <p className="text-xs text-muted-foreground mt-1">This amount will be held in escrow immediately.</p>
             </div>
-            
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
-              <textarea 
-                required
-                rows="4"
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                placeholder="Describe the work to be done..."
-              ></textarea>
+              <label className="block text-sm font-medium mb-1.5">Deadline</label>
+              <input type="date" className="input-field" required value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
             </div>
-            
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Budget</label>
-                <div className="flex">
-                  <input 
-                    type="number"
-                    required
-                    className="w-full bg-slate-700 border border-slate-600 rounded-l-lg p-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                    value={formData.budget}
-                    onChange={e => setFormData({...formData, budget: e.target.value})}
-                    placeholder="Amount"
-                  />
-                  <select 
-                    className="bg-slate-600 border border-slate-500 rounded-r-lg p-3 text-white focus:outline-none"
-                    value={formData.currency}
-                    onChange={e => setFormData({...formData, currency: e.target.value})}
-                  >
-                    <option value="USD">USD</option>
-                    <option value="INR">INR</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Deadline</label>
-                <input 
-                  type="date"
-                  required
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                  value={formData.deadline}
-                  onChange={e => setFormData({...formData, deadline: e.target.value})}
-                />
-              </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Wallet PIN</label>
+            <input
+              type="password"
+              maxLength={4}
+              className="input-field"
+              required
+              value={form.pin}
+              onChange={(e) => setForm({ ...form, pin: e.target.value })}
+              placeholder="4-digit PIN to confirm escrow lock"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Required to transfer budget from your wallet into escrow.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Bonus / Reward (optional)</label>
+            <input className="input-field" value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} placeholder="e.g. ₹5,000 bonus for early delivery" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Job Links (one per line)</label>
+            <textarea className="input-field" rows={2} value={form.jobLinks} onChange={(e) => setForm({ ...form, jobLinks: e.target.value })} placeholder="https://figma.com/..." />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Project Links (one per line)</label>
+            <textarea className="input-field" rows={2} value={form.projectLinks} onChange={(e) => setForm({ ...form, projectLinks: e.target.value })} placeholder="https://github.com/..." />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Privacy & Security Level</label>
+            <div className="grid sm:grid-cols-3 gap-2">
+              {PRIVACY_LEVELS.map(({ value, label, description }) => (
+                <label key={value} className={`p-3 rounded-md border cursor-pointer text-sm ${form.privacyLevel === value ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                  <input type="radio" name="privacy" value={value} checked={form.privacyLevel === value} onChange={() => setForm({ ...form, privacyLevel: value })} className="sr-only" />
+                  <p className="font-medium">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{description}</p>
+                </label>
+              ))}
             </div>
-            
-            <div className="pt-4 flex gap-4">
-              <button 
-                type="button" 
-                onClick={() => navigate('/dashboard')}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold shadow-lg shadow-blue-900/50 transition-colors"
-              >
-                Post Job
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">Security & NDA Notes</label>
+            <textarea className="input-field" rows={2} value={form.securityNotes} onChange={(e) => setForm({ ...form, securityNotes: e.target.value })} placeholder="Confidential data handling, IP ownership, NDA requirements..." />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={() => navigate('/dashboard')} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" className="btn-primary flex-1">Post Job</button>
+          </div>
+        </form>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

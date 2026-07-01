@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "escrowId": "6601f5b2-a6cd-4a1b-bd9c-5d7ad379d9df",
+    "jobId": "42258160-5780-48a9-b2e5-075d5e882296",
+    "jobPosterId": "b344cb17-3c8c-4d2d-91c2-04e9426c77a4",
+    "freelancerId": "fa7e094f-27bb-4074-946d-1fc41705cc96",
+    "amount": 25000,
+    "currency": "INR",
+    "status": "SUBMITTED",
+    "createdAt": "2026-07-01T08:25:48.965Z",
+    "updatedAt": "2026-07-01T08:26:51.007Z"
+  }
+]
