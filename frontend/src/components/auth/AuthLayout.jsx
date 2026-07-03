@@ -15,7 +15,7 @@ const AuthLayout = ({ children, title, subtitle, footer }) => (
         <div className="w-9 h-9 bg-white/10 rounded-md flex items-center justify-center">
           <Shield size={18} />
         </div>
-        FintechEL
+        MCA App
       </Link>
 
       <div>
@@ -36,7 +36,7 @@ const AuthLayout = ({ children, title, subtitle, footer }) => (
       </div>
 
       <p className="text-xs text-primary-foreground/50">
-        © {new Date().getFullYear()} FintechEL Escrow Platform
+        © {new Date().getFullYear()} MCA App Escrow Platform
       </p>
     </div>
 
@@ -46,7 +46,7 @@ const AuthLayout = ({ children, title, subtitle, footer }) => (
           <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
             <Shield size={16} className="text-primary-foreground" />
           </div>
-          FintechEL
+          MCA App
         </Link>
       </div>
 

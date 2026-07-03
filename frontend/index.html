@@ -3,9 +3,39 @@
 
 <head>
   <meta charset="UTF-8" />
+
+  <!-- Viewport: mobile-first, respect safe areas (iPhone notch/home bar) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Theme colour — matches Tailwind primary (#18181b) -->
+  <meta name="theme-color" content="#18181b" />
+  <meta name="msapplication-TileColor" content="#18181b" />
+
+  <!-- Apple PWA / Add to Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MCA App" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+  <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FintechEL — Secure Escrow Checkout</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+
+  <!-- SEO -->
+  <title>MCA App — Secure Escrow Platform</title>
+  <meta name="description" content="MCA App: Secure escrow payments for freelance jobs. Post jobs, lock funds in escrow, and release payments with confidence." />
+  <meta name="keywords" content="escrow, fintech, freelance, payments, secure, jobs, PWA" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MCA App — Secure Escrow Platform" />
+  <meta property="og:description" content="Post jobs, lock funds in escrow, and release payments with confidence." />
+  <meta property="og:type" content="website" />
+
+  <!-- Prevent auto-detection on iOS -->
+  <meta name="format-detection" content="telephone=no" />
 </head>
 
 <body>

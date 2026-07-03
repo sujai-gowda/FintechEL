@@ -15,6 +15,46 @@
     -moz-osx-font-smoothing: grayscale;
     background-color: #ffffff;
     color: #09090b;
+
+    /* PWA: prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+  }
+
+  /* PWA: remove blue tap highlight on Android/iOS */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* PWA: faster touch response */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* PWA: smooth scrolling everywhere */
+  html {
+    scroll-behavior: smooth;
+    /* Respect safe areas (iPhone notch & home bar) */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* PWA standalone mode — ensure body fills the whole screen */
+  @media (display-mode: standalone) {
+    body {
+      background-color: #ffffff;
+      min-height: 100svh;
+    }
+  }
+}
+
+@layer utilities {
+  /* Utility to apply safe-area bottom padding */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 }
 
@@ -56,15 +96,15 @@
   }
 
   .page-container {
-    @apply min-h-screen bg-white text-foreground p-6 md:p-8;
+    @apply min-h-screen bg-white text-foreground p-4 sm:p-6 md:p-8;
   }
 
   .page-header {
-    @apply flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4;
+    @apply flex flex-col md:flex-row justify-between items-start md:items-center mb-6 sm:mb-8 gap-4;
   }
 
   .page-title {
-    @apply text-2xl font-semibold tracking-tight text-foreground;
+    @apply text-xl sm:text-2xl font-semibold tracking-tight text-foreground;
   }
 
   .nav-card {
@@ -75,3 +115,4 @@
     @apply bg-primary text-primary-foreground border-transparent rounded-lg shadow-card p-4 flex flex-col items-center justify-center gap-3 transition-colors hover:bg-zinc-800 cursor-pointer;
   }
 }
+

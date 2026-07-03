@@ -13,7 +13,7 @@ export const LOGIN_ROLES = [
 export const REGISTER_ROLES = LOGIN_ROLES.filter((r) => r.value !== ROLES.ADMIN);
 
 export const DEMO_CREDENTIALS = [
-  { role: ROLES.ADMIN, email: 'admin@escrow.com', password: 'admin123' },
+  { role: ROLES.ADMIN, email: 'admin@escrow.com', password: 'Admin@FintechEL2026' },
   { role: ROLES.CLIENT, email: 'client@escrow.com', password: 'client123' },
   { role: ROLES.FREELANCER, email: 'freelancer@escrow.com', password: 'freelancer123' },
 ];

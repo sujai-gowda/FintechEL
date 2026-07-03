@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { PWAInstallProvider } from './context/PWAInstallContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -14,11 +15,15 @@ import EscrowTransactions from './pages/EscrowTransactions';
 import TransactionHistory from './pages/TransactionHistory';
 import Messages from './pages/Messages';
 import ProtectedRoute from './components/ProtectedRoute';
+import InstallPrompt from './components/InstallPrompt';
 import { ROLES } from './constants/roles';
 
 function App() {
   return (
     <AuthProvider>
+      <PWAInstallProvider>
+      {/* PWA install banner — shown when browser fires beforeinstallprompt */}
+      <InstallPrompt />
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -98,6 +103,7 @@ function App() {
           />
         </Routes>
       </Router>
+      </PWAInstallProvider>
     </AuthProvider>
   );
 }

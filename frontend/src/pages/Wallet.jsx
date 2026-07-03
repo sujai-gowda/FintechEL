@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch } from '../services/api';
 import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 const Wallet = () => {
@@ -8,22 +9,10 @@ const Wallet = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchWallet = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/wallets/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setWallet(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchWallet();
+    apiFetch('/wallets/me', token)
+      .then(setWallet)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [token]);
 
   if (loading) return <div className="card p-6 text-muted-foreground text-sm">Loading wallet...</div>;
@@ -42,14 +31,14 @@ const Wallet = () => {
         <p className="text-muted-foreground text-xs font-medium mb-1">Available Balance</p>
         <h3 className="text-3xl font-semibold text-foreground tracking-tight">
           {wallet ? wallet.balance.toLocaleString() : '0.00'}{' '}
-          <span className="text-muted-foreground text-lg">{wallet ? wallet.currency : 'USD'}</span>
+          <span className="text-muted-foreground text-lg">{wallet ? wallet.currency : 'INR'}</span>
         </h3>
         
         <div className="mt-6 flex gap-3">
-          <button className="btn-secondary flex-1 gap-2 h-9">
+          <button type="button" className="btn-secondary flex-1 gap-2 h-9">
             <ArrowUpRight size={14} /> Receive
           </button>
-          <button className="btn-secondary flex-1 gap-2 h-9">
+          <button type="button" className="btn-secondary flex-1 gap-2 h-9">
             <ArrowDownLeft size={14} /> Send
           </button>
         </div>

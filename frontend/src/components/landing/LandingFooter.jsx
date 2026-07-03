@@ -12,7 +12,7 @@ const LandingFooter = () => (
             <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
               <Shield size={14} className="text-primary-foreground" />
             </div>
-            FintechEL
+            MCA App
           </Link>
           <p className="text-sm text-muted-foreground max-w-xs">
             Secure escrow checkout for freelance jobs. Hold funds safely until work is approved.
@@ -32,7 +32,7 @@ const LandingFooter = () => (
       </div>
 
       <div className="mt-10 pt-6 border-t border-border text-xs text-muted-foreground">
-        © {new Date().getFullYear()} FintechEL Escrow Platform. Demo project for educational use.
+        © {new Date().getFullYear()} MCA App Escrow Platform. Demo project for educational use.
       </div>
     </div>
   </footer>

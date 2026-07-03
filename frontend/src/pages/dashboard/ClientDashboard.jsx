@@ -5,16 +5,9 @@ import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import WalletPanel from '../../components/wallet/WalletPanel';
 import { apiFetch } from '../../services/api';
 import { formatINR } from '../../constants/currency';
-import { LayoutDashboard, Briefcase, PlusCircle, Shield, Activity, MessageSquare } from 'lucide-react';
+import { CLIENT_NAV } from '../../constants/dashboardNav';
 
-const NAV = [
-  { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Post Job', path: '/jobs/create', icon: PlusCircle },
-  { label: 'My Jobs', path: '/jobs/my', icon: Briefcase },
-  { label: 'Escrow', path: '/escrow', icon: Shield },
-  { label: 'Messages', path: '/messages', icon: MessageSquare },
-  { label: 'History', path: '/history', icon: Activity },
-];
+const NAV = CLIENT_NAV;
 
 const ClientDashboard = () => {
   const { user, token } = useAuth();

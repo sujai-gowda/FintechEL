@@ -4,8 +4,7 @@ import { apiFetch } from '../services/api';
 import { formatINR } from '../constants/currency';
 import { ROLES } from '../constants/roles';
 import { LogOut, Users, Briefcase, IndianRupee, MessageSquare, Shield } from 'lucide-react';
-
-const API_BASE = 'http://localhost:5000/api';
+import InstallAppButton from '../components/InstallAppButton';
 
 const AdminDashboard = () => {
   const { token, logout } = useAuth();
@@ -20,8 +19,8 @@ const AdminDashboard = () => {
   const fetchAll = async () => {
     try {
       const [usersData, walletsData, statsData] = await Promise.all([
-        fetch(`${API_BASE}/users`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
-        fetch(`${API_BASE}/wallets`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+        apiFetch('/users', token),
+        apiFetch('/wallets', token),
         apiFetch('/admin/stats', token),
       ]);
       setUsers(usersData);
@@ -39,14 +38,12 @@ const AdminDashboard = () => {
     setMessage('');
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/wallets/assign`, {
+      const data = await apiFetch('/wallets/assign', token, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: assignForm.userId, amount: assignForm.amount, currency: 'INR' }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
       setMessage(data.message);
+      setAssignForm({ userId: '', amount: '' });
       fetchAll();
     } catch (err) {
       setError(err.message);
@@ -55,12 +52,7 @@ const AdminDashboard = () => {
 
   const handleFreeze = async (userId) => {
     try {
-      const res = await fetch(`${API_BASE}/users/${userId}/freeze`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await apiFetch(`/users/${userId}/freeze`, token, { method: 'PUT' });
       setMessage(data.message);
       fetchAll();
     } catch (err) {
@@ -84,12 +76,15 @@ const AdminDashboard = () => {
   return (
     <div className="page-container">
       <div className="max-w-7xl mx-auto">
-        <header className="page-header">
+        <header className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="page-title">Admin Control Centre</h1>
             <p className="text-sm text-muted-foreground mt-1">Monitor clients, freelancers, INR wallets & platform activity</p>
           </div>
-          <button onClick={logout} className="btn-secondary gap-2"><LogOut size={16} /> Logout</button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <InstallAppButton />
+            <button type="button" onClick={logout} className="btn-secondary gap-2"><LogOut size={16} /> Logout</button>
+          </div>
         </header>
 
         {message && <div className="bg-muted border border-border p-3 rounded-md mb-4 text-sm">{message}</div>}
@@ -161,24 +156,26 @@ const AdminDashboard = () => {
 
         <div className="card p-6 mt-6">
           <h2 className="text-sm font-medium mb-4">All Wallets (INR)</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="pb-2 text-left text-muted-foreground">User</th>
-                <th className="pb-2 text-right text-muted-foreground">Balance</th>
-                <th className="pb-2 text-left text-muted-foreground">PIN</th>
-              </tr>
-            </thead>
-            <tbody>
-              {wallets.map((w) => (
-                <tr key={w.id} className="border-b border-border">
-                  <td className="py-2">{w.userId}</td>
-                  <td className="py-2 text-right font-medium">{formatINR(w.balance)}</td>
-                  <td className="py-2">{w.hasPin ? 'Secured' : 'Not set'}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="pb-2 text-left text-muted-foreground">User</th>
+                  <th className="pb-2 text-right text-muted-foreground">Balance</th>
+                  <th className="pb-2 text-left text-muted-foreground">PIN</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {wallets.map((w) => (
+                  <tr key={w.id} className="border-b border-border">
+                    <td className="py-2">{w.userId}</td>
+                    <td className="py-2 text-right font-medium">{formatINR(w.balance)}</td>
+                    <td className="py-2">{w.hasPin ? 'Secured' : 'Not set'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

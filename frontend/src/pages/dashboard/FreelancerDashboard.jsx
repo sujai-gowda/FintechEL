@@ -5,17 +5,9 @@ import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import WalletPanel from '../../components/wallet/WalletPanel';
 import { apiFetch } from '../../services/api';
 import { formatINR } from '../../constants/currency';
-import { LayoutDashboard, Search, Heart, Shield, Activity, MessageSquare, Briefcase } from 'lucide-react';
+import { FREELANCER_NAV } from '../../constants/dashboardNav';
 
-const NAV = [
-  { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Find Jobs', path: '/jobs', icon: Search },
-  { label: 'My Applications', path: '/jobs/applied', icon: Briefcase },
-  { label: 'Wishlist', path: '/jobs?tab=wishlist', icon: Heart },
-  { label: 'Escrow', path: '/escrow', icon: Shield },
-  { label: 'Messages', path: '/messages', icon: MessageSquare },
-  { label: 'History', path: '/history', icon: Activity },
-];
+const NAV = FREELANCER_NAV;
 
 const FreelancerDashboard = () => {
   const { user, token } = useAuth();

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Shield } from 'lucide-react';
 import { NAV_LINKS } from '../../constants/landing';
+import InstallAppButton from '../InstallAppButton';
 
 const LandingHeader = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -13,7 +14,7 @@ const LandingHeader = () => {
           <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
             <Shield size={16} className="text-primary-foreground" />
           </div>
-          FintechEL
+          MCA App
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -25,6 +26,7 @@ const LandingHeader = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <InstallAppButton />
           <Link to="/login" className="btn-secondary h-9 px-4">Log in</Link>
           <Link to="/register" className="btn-primary h-9 px-4">Get started</Link>
         </div>
@@ -52,6 +54,7 @@ const LandingHeader = () => {
             </a>
           ))}
           <div className="flex flex-col gap-2 pt-2">
+            <InstallAppButton className="w-full h-9" />
             <Link to="/login" className="btn-secondary w-full" onClick={() => setMobileOpen(false)}>Log in</Link>
             <Link to="/register" className="btn-primary w-full" onClick={() => setMobileOpen(false)}>Get started</Link>
           </div>
