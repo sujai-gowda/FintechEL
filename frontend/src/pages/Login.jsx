@@ -32,7 +32,7 @@ const Login = () => {
       }
 
       login(data.user, data.token);
-      
+
       if (data.user.role === 'Admin') {
         navigate('/admin');
       } else {
@@ -46,20 +46,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background glowing orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="min-h-screen bg-white flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
 
       <div className="w-full max-w-md space-y-8 animate-fade-in relative z-10">
         <div className="text-center animate-slide-up">
           <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-brand-400 to-blue-500 rounded-2xl flex justify-center items-center shadow-lg shadow-brand-500/30 mb-6">
             <Lock className="text-white" size={32} />
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-white mb-2">
+          <h2 className="text-3xl font-bold tracking-tight text-black mb-2">
             Welcome Back
           </h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-black">
             Sign in to access your Escrow Platform
           </p>
         </div>
@@ -71,7 +68,7 @@ const Login = () => {
                 <span className="block sm:inline">{error}</span>
               </div>
             )}
-            
+
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                 Email Address
